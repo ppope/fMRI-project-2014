@@ -585,7 +585,7 @@ def print_means(results,name):
 	means = [results[0],results[1],results[2],results[3],results[4],results[5],results[6]]
      #means = [results[0],results[1],results[2],results[3],results[4],results[5],results[6],results[7]]
 	#print "\tSVM Linear\tSVM RBF\tKNN\tGaussian\tBernoulli\tmultinomial\t\tLogistic Reg.\t\tRandom Forest"
-	print name,"\tA:%5.5f\tB:%5.5f\tC:%5.5f\tD:%5.5f\tE:%5.5f\tG:%5.5f\tH:%5.5f" %(results[0],results[1],results[2],results[3],results[4],0,results[5],results[6])
+	print name,"\tA:%5.5f\tB:%5.5f\tC:%5.5f\tD:%5.5f\tE:%5.5f\tG:%5.5f\tH:%5.5f" %(results[0],results[1],results[2],results[3],results[4],results[5],results[6])
 
 def means_save(results,name):
 	algorithms = ['svm linear','svm rbf','knn','gaussianNB','bernoulliBN','logistic','forests']
@@ -883,4 +883,4 @@ def main():
 		print "you fucked up"
 		main()
 
-main()
+#main()
