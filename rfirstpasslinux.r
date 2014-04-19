@@ -41,6 +41,12 @@ names(fmri1)[1] <- "class.labels"
 fa1 <- cbind(class_labels, fa1)
 names(fa1)[1] <- "class.labels"
 
+#4/18/14
+#Since we are running into memory problems with LDA, as a temporary fix we will work with the first ten (covariate) columns
+#so we can work on the building the classifiers. 
+fmri1.cut <- fmri1[, 1:11]
+
+
 # create function for taking random sample with replacement
 rowsample <- function(df, n) { 
   sampled_df <- df[sample(nrow(df), size=n, replace=FALSE),]
@@ -79,11 +85,7 @@ p = 0.70
 # My machine is unable to run lda() on fmri1, and throws  the error cannot allocate vector of size 20.1 Gb.
 #xx <- lda(fmri1, grouping=fmri1$class_labels, subset = partdataInd(fmri1, p))
 
-#4/18/14
-#Since we are running into memory problems with LDA, as a temporary fix we will work with the first ten (covariate) columns
-#so we can work on the building the classifiers. 
 
-fmri1.cut <- fmri1[, 1:10]
 #yy <- lda(fmri1.cut, grouping=fmri1.cut$class_labels, subset = partdataInd(fmri1.cut, p))
 yy <- lda(fmri1.cut, grouping=class_labels)
 
@@ -99,29 +101,67 @@ test <- readMat("fmri_All.mat")
 fmri1.mat <- as.matrix(fmri1[[1]])
 image(fmri1.mat)  #This image is uninspiring.
 
-
 #################
 ###  RBF SVM  ###
 #################
 
-rbsvm.fmri1 <- svm(class_labels ~ ., data = fmri1.cut, type = "C") 
-pred.rbsvm.fmri1 <- fitted(rbsvm.fmri1)
-fmri1.rbsvm.table <- table(pred.rbsvm.fmri1, class_labels)
-fmri1.rbsvm.table
+rbsvm.fmri1 <- svm(class.labels ~ ., data = fmri1.cut, type = "C") 
+rbsvm.fmri1.pred <- fitted(rbsvm.fmri1)
+rbsvm.fmri1.table <- table(pred.rbsvm.fmri1, fmri1.cut$class.labels)
+rbsvm.fmri1.table
 
 #################
 ###  LIN SVM  ###
 #################
 
-linsvm.fmri1 <- svm(class_labels ~ ., data = fmri1.cut, type = "C", kernel = "linear") 
-pred.linsvm.fmri1 <- fitted(linsvm.fmri1)
-fmri1.linsvm.table <- table(pred.linsvm.fmri1, class_labels)
-fmri1.linsvm.table
+linsvm.fmri1 <- svm(class.labels ~ ., data = fmri1.cut, type = "C", kernel = "linear") 
+linsvm.fmri1.pred <- fitted(linsvm.fmri1)
+linsvm.fmri1.table <- table(pred.linsvm.fmri1, fmri1.cut$class.labels)
+linsvm.fmri1.table
+
+#################
+###   kNN     ###
+#################
+
+# decide whether we should try to find optimal k or not
+knn.fmri1 <- knn(train = fmri1.cut[,-1], test = fmri1.cut[,-1],
+                 cl = class_labels, k = 5)
+knn.fmri1.table <- table(knn.fmri1, class_labels)
+knn.fmri1.table
 
 
+########################
+###  RANDOM FOREST   ###
+########################
+
+library(randomForest)
+
+#TO DO: 
+#1. Change the number of trees used in the random forest classifier in Python (10).
+#2. Decide if we want to use the default number of trees in R (500).
+
+#ntrees <- 10  
+ntrees <- 500
+rf.fmri1 <- randomForest(class.labels ~ ., data=fmri1.cut, ntree=ntrees)
 
 
+################################
+###  GAUSSIAN NAIVE BAYES   ####
+################################
+
+#Note: the naiveBayes package used below assumes a Gaussian distribution for the predictors.
+
+test.ind <- partdataInd(fmri1.cut, 0.70)
+gnb.fmri1 <- naiveBayes(class.labels ~ ., data=fmri1.cut, subset=test.ind)
+predict(gnb.fmri1, fmri1.cut[-test.ind,])
 
 
+#################################
+###  MULTIONMIAL NAIVE BAYES ####
+#################################
 
+#4/19/14
+#First attempt at finding an R package for multinomial naive bayes classification yielded no easy results.
+#http://stackoverflow.com/questions/8874058/multinomial-naive-bayes-classifier?rq=1
+#library(bnlearn)
 
