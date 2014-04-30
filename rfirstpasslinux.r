@@ -24,16 +24,28 @@ setwd(wd)
 
 #read in data 
 #start out with first dataset (A)
-fmri1 <- readMat("fmri_All.mat")
-fmri1 <- as.data.frame(fmri1[[1]])
 
-fa1 <- readMat("FA.mat")
-fa1 <- as.data.frame(fa1[[1]])
 
-# Need to create a class label to the datasets.
-# Jack's code (lines 247-266) and thesis (P.22) indicate for that for dataset A,
-# patients 1-62 (62 total) are controls, 63-116 (54 total) have schizophrenia, and 117-164 (62 total) have bipolar disorder.
-class_labels <- as.factor(c(rep(0,62), rep(1,54), rep(2,48)))
+
+loadData <- function(wd){
+  
+  setwd(wd)
+  file <- readline(prompt = "Please specify which file to read in: ")
+  data <- readMat(file)
+  data <- as.data.frame(data[[1]])
+  
+}
+
+addClassLabels <- function(data){
+  
+  # Need to create a class label to the datasets.
+  # Jack's code (lines 247-266) and thesis (P.22) indicate for that for dataset A,
+  # patients 1-62 (62 total) are controls, 63-116 (54 total) have schizophrenia, and 117-164 (62 total) have bipolar disorder.
+  class_labels <- as.factor(c(rep(0,62), rep(1,54), rep(2,48)))
+  
+  
+}
+
 
 fmri1 <- cbind(class_labels, fmri1)
 names(fmri1)[1] <- "class.labels"
@@ -96,10 +108,26 @@ yy <- lda(fmri1.cut, grouping=class_labels)
 #####################
 
 #install.packages("fmri")
+#install.packages("AnalyzeFMRI")
+
+library(AnalyzeFMRI)
 
 test <- readMat("fmri_All.mat")
+x <- test[[1]]
+xx <- x[1,]
+
+image(matrix(xx[1:260], 10, 26))
+image(matrix(xx[1:520], 52, 10))
+image(matrix(xx[1:1040], 52, 20))
+
+image(matrix(xx[1:65], 13, 5), main="WTF brain")
+
 fmri1.mat <- as.matrix(fmri1[[1]])
 image(fmri1.mat)  #This image is uninspiring.
+
+prime.factors <- c(2,2,2,2,5,5,5,13)
+
+nx <- 
 
 #################
 ###  RBF SVM  ###
