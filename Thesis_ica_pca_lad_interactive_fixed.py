@@ -883,4 +883,4 @@ def main():
 		print "you fucked up"
 		main()
 
-#main()
+main()
