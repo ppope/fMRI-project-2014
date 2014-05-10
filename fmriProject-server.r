@@ -1,10 +1,13 @@
 
 
+#This version of fmriProject.r slightly modifed to run on the NCF server.
+
 
 #TO DO:
 #Extend functionality 
 #  run on multiple training set sizes.
-#  run multiple feature selection procedures (e.g. pca, qda, ica)
+#  run multiple feature selection procedures
+
 
 #####################
 ### LOAD PACKAGES ###
@@ -84,13 +87,16 @@ addClassLabels.B <- function(data){
   
 }
 
+
+#This function cuts the large matrices ("number of columns" > 10000) down to 25% of their
 cutData <- function(data){
   
-  N <- 10
-  data <- data[, c(1, sample(2:ncol(data), N))]
+  N <- ncol(data)
+  if (N > 10000) data <- data[, c(1, sample(2:ncol(data), N*.25))]
   return(data)
   
 }
+
 
 #The function below returns the indices of the testing set.
 partDataInd <- function(df, percentage) {
@@ -333,7 +339,6 @@ runAllDatasets <- function(data.list, N, p){
   for (i in 1:length(data.list)){
     
     data <- data.list[[i]]
-    data <- cutData(data)
     data <- runLDA(data)
     data.results <- runAllClassifiers(data, N, p)
     data.results <- cbind("dataset" = rep(names(data.list[i]), nrow(data.results)), data.results)
@@ -353,7 +358,8 @@ main <- function(){
   #set working directory
   #wd <- "/home/dan/Dropbox/PythonRproject"
   #wd <- "C:\\Users\\dan\\Dropbox\\PythonRproject"
-  wd <- "/home/delores/Desktop/fMRI/data/"
+  #wd <- "/home/delores/Desktop/fMRI/data/"
+  wd <- "/home/pmcdonald/fmri-project-2014/data"
   p <- 0.70
   N <- 100
   data.list <- loadAndCombineData(wd)
@@ -364,12 +370,13 @@ main <- function(){
   #wd <- readline(prompt = "Please specify the path to the directory containing the data: ")
   #p <- as.numeric(readline(prompt = "Please specify a percentage (0.xx) of testing data: "))
   #N <- as.numeric(readline(prompt = "Please specify the number of times to run each classifier: "))
-
   return(results)
 }
 
 
 results <- main()
+
+write.csv(results, file="fMRI-project-2014-results-LDA-only.csv", row.names=FALSE)
 
 
 
