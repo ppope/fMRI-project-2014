@@ -1,5 +1,9 @@
 
 
+#This version of fmriProject.r slightly modifed to run on the NCF server.
+#The results are written to the file "fMRI-project-2014-results-pca.csv".
+
+#This code runs only PCA on the entire data set. 
 
 #TO DO:
 #Extend functionality 
@@ -87,13 +91,10 @@ addClassLabels.B <- function(data){
 cutData <- function(data){
   
   #For local version
-  N <- 50
-  data <- data[, c(1, sample(2:ncol(data), N))]
-  
-  #For NCF server 
-  #N <- ncol(data)
-  #if (N > 10000) data <- data[, c(1, sample(2:ncol(data), N*.25))]
-  
+  #N <- 50
+  #data <- data[, c(1, sample(2:ncol(data), N))]
+  N <- ncol(data)
+  data <- data[, c(1, sample(2:ncol(data), N*.25))]
   return(data)
   
 }
@@ -353,7 +354,6 @@ runAllDatasets <- function(data.list, N, p){
   for (i in 1:length(data.list)){
     
     data <- data.list[[i]]
-    #data <- cutData(data)
     
     feature.selection.funs <- c("runLDA", "runPCA", "runICA")
     
@@ -361,7 +361,8 @@ runAllDatasets <- function(data.list, N, p){
       
       FUN <- match.fun(feature.selection.funs[j]) 
       
-      if ((feature.selection.funs[j] == "runLDA")|(feature.selection.funs[j] == "runLDA")) data <- cutData(data)
+      #If you're still having memory problems comment out this line. 
+      #if ((feature.selection.funs[j] == "runLDA")|(feature.selection.funs[j] == "runICA")) data <- cutData(data)
       
       data.fs <- FUN(data)
       data.results <- runAllClassifiers(data.fs, N, p)
@@ -388,8 +389,8 @@ main <- function(){
   #set working directory
   #wd <- "/home/dan/Dropbox/PythonRproject"
   #wd <- "C:\\Users\\dan\\Dropbox\\PythonRproject"
-  wd <- "/home/delores/Desktop/fMRI/data/"
-  #wd <- "/home/pmcdonald/fmri-project-2014/data"
+  #wd <- "/home/delores/Desktop/fMRI/data/"
+  wd <- "/home/pmcdonald/fmri-project-2014/data"
   p <- 0.70
   N <- 100
   data.list <- loadAndCombineData(wd)
@@ -401,5 +402,4 @@ main <- function(){
 
 results <- main()
 
-#write.csv(results, file="fMRI-project-2014-results.csv", row.names=FALSE)
-
+write.csv(results, file="fMRI-project-2014-results-pca.csv", row.names=FALSE)

@@ -1,13 +1,13 @@
 
 
 #This version of fmriProject.r slightly modifed to run on the NCF server.
+#The results are written to the file "fMRI-project-2014-results-pca-ica-lda.csv".
 
+#This code runs LDA, ICA, and PCA on the entire data set. 
 
 #TO DO:
 #Extend functionality 
-#  run on multiple training set sizes.
-#  run multiple feature selection procedures
-
+#  to run on multiple training set sizes. Currently only runs on 70% training to 30% testing
 
 #####################
 ### LOAD PACKAGES ###
@@ -20,6 +20,7 @@ library(e1071)        #for SVM, naive Bayes
 library(FNN)          #for k-nearest neighbors 
 library(randomForest) #for random forest 
 library(LiblineaR)    #for L2 regularized logistic regression
+library(fastICA)      #for ICA
 
 ##########################
 ###  DATA PROCESSING #####
@@ -41,7 +42,7 @@ loadAndCombineData <- function(wd){
   data.list.A[[3]] <- cbind(data.list.A[[1]], data.list.A[[2]])
   
   for (i in 1:length(data.list.A)) data.list.A[[i]] <- addClassLabels.A(data.list.A[[i]])
-    
+  
   #Read in dataset B
   files.B <- "Second_data.mat"
   data.list.B <- vector(mode="list", length=7)
@@ -53,11 +54,11 @@ loadAndCombineData <- function(wd){
   data.list.B[[5]] <- cbind(data.list.B[[1]], data.list.B[[3]])
   data.list.B[[6]] <- cbind(data.list.B[[2]], data.list.B[[3]])
   data.list.B[[7]] <- cbind(data.list.B[[1]], data.list.B[[2]], data.list.B[[3]])
-
+  
   for (i in 1:length(data.list.B)) data.list.B[[i]] <- addClassLabels.B(data.list.B[[i]])
-    
+  
   data.list <- append(data.list.A, data.list.B)
-
+  
   names(data.list) <- c("fMRI.A", "FA.A", "(fMRI+FA).A", "FA.B", "ALFF.B", "GM.B", "(FA+ALFF).B", "(FA+GM).B", "(ALFF+GM).B", "(FA+ALFF+GM).B" )
   return(data.list)
   
@@ -66,7 +67,7 @@ loadAndCombineData <- function(wd){
 # The next two functions create a class label for dataset A and dataset B respectively..
 addClassLabels.A <- function(data){
   
-
+  
   # Jack's code (lines 247-266) and thesis (P.22) indicate for that for dataset A,
   # patients 1-62 (62 total) are controls, 63-116 (54 total) have schizophrenia, and 117-164 (62 total) have bipolar disorder.
   class_labels <- as.factor(c(rep(0,62), rep(1,54), rep(2,48)))
@@ -87,16 +88,16 @@ addClassLabels.B <- function(data){
   
 }
 
-
-#This function cuts the large matrices ("number of columns" > 10000) down to 25% of their
 cutData <- function(data){
   
+  #For local version
+  #N <- 50
+  #data <- data[, c(1, sample(2:ncol(data), N))]
   N <- ncol(data)
-  if (N > 10000) data <- data[, c(1, sample(2:ncol(data), N*.25))]
+  data <- data[, c(1, sample(2:ncol(data), N*.25))]
   return(data)
   
 }
-
 
 #The function below returns the indices of the testing set.
 partDataInd <- function(df, percentage) {
@@ -120,6 +121,27 @@ runLDA <- function(data){
   return(data.lda)
   
 }
+
+runPCA <- function(data){
+  
+  class_labels <- data$class.labels
+  data.comp <- prcomp(data[-1], scale = TRUE)
+  data.cov <- as.data.frame(data.comp$x)[,1:50]
+  data.cov <- cbind("class.labels" = class_labels,  data.cov) 
+  return(data.cov)
+  
+}
+
+runICA <- function(data){
+  
+  class_labels <- data$class.labels
+  data.comp <- fastICA(data[-1], n.comp=50, method = c("C"))
+  data.cov <- as.data.frame(data.comp$X)
+  data.cov <- cbind("class.labels" = class_labels,  data.cov) 
+  return(data.cov)
+  
+}
+
 
 ####################
 ### CLASSIFIERS  ###
@@ -210,7 +232,7 @@ runLogisticRegression <- function(data, p){
 
 #Gaussian Naive Bayes
 runGaussianNaiveBayes <- function(data, p){
-   
+  
   train.ind <- partDataInd(data, p)
   gnb.model <- naiveBayes(class.labels ~ ., data = data, subset=train.ind)
   gnb.model.pred <- predict(gnb.model, newdata=data[-train.ind,])
@@ -219,13 +241,6 @@ runGaussianNaiveBayes <- function(data, p){
   return(gnb.metrics)
   
 }
-
-#Multinomial Naive Bayes
-
-#4/19/14
-#First attempt at finding an R package for multinomial naive bayes classification yielded no easy results.
-#http://stackoverflow.com/questions/8874058/multinomial-naive-bayes-classifier?rq=1
-#library(bnlearn)
 
 ####################
 ###   METRICS    ###
@@ -287,7 +302,7 @@ calcMetrics <- function(confusion.mat){
   metric.table[n.classes+1,] <- colMeans(metric.table[1:n.classes,])
   
   return(metric.table)
-    
+  
 }
 
 
@@ -329,7 +344,7 @@ runAllClassifiers <- function(data, N, p){
   }
   
   return(total.results)
-   
+  
 }
 
 
@@ -339,12 +354,28 @@ runAllDatasets <- function(data.list, N, p){
   for (i in 1:length(data.list)){
     
     data <- data.list[[i]]
-    data <- runLDA(data)
-    data.results <- runAllClassifiers(data, N, p)
-    data.results <- cbind("dataset" = rep(names(data.list[i]), nrow(data.results)), data.results)
-    total.results <- rbind(total.results, data.results)
+    
+    feature.selection.funs <- c("runLDA", "runPCA", "runICA")
+    
+    for (j in 1:(length(feature.selection.funs))){
+      
+      FUN <- match.fun(feature.selection.funs[j]) 
+      
+      #If you're still having memory problems comment out this line. 
+      #if ((feature.selection.funs[j] == "runLDA")|(feature.selection.funs[j] == "runICA")) data <- cutData(data)
+      
+      data.fs <- FUN(data)
+      data.results <- runAllClassifiers(data.fs, N, p)
+      
+      data.results <- cbind("dataset" = rep(names(data.list[i]), nrow(data.results)), 
+                            "feature.selection.method" = substr(feature.selection.funs[j], 4, nchar(feature.selection.funs[j])), 
+                            data.results) 
+      total.results <- rbind(total.results, data.results)     
+      
+    }
+    
   }
-
+  
   return(total.results)
 }
 
@@ -364,19 +395,11 @@ main <- function(){
   N <- 100
   data.list <- loadAndCombineData(wd)
   results <- runAllDatasets(data.list, N, p)
-
-  #"Second_data.mat" contains data for FA, ALFF, and GM.
-  #"ttest_feature.mat"contains data for FA2, ALFF2, and GM2.
-  #wd <- readline(prompt = "Please specify the path to the directory containing the data: ")
-  #p <- as.numeric(readline(prompt = "Please specify a percentage (0.xx) of testing data: "))
-  #N <- as.numeric(readline(prompt = "Please specify the number of times to run each classifier: "))
+  
   return(results)
 }
 
 
 results <- main()
 
-write.csv(results, file="fMRI-project-2014-results-LDA-only.csv", row.names=FALSE)
-
-
-
+write.csv(results, file="fMRI-project-2014-results-pca-ica-lda.csv", row.names=FALSE)
