@@ -1,0 +1,30 @@
+svm_linear
+0
+OrderedDict([('sensitivity', 0.53511682761682744), ('specificity', 0.58318202304231714), ('precision', 0.39777777777777751), ('negative predictive value', 0.69363636363636316), ('false positive rate', 0.41681797695768275), ('false discovery rate', 0.60222222222222233), ('false negative rate', 0.4648831723831725), ('accuracy', 0.56050000000000022), ('f1 score', 0.44216565701240607)])
+1
+OrderedDict([('sensitivity', 0.58318202304231714), ('specificity', 0.53511682761682744), ('precision', 0.69363636363636316), ('negative predictive value', 0.39777777777777751), ('false positive rate', 0.4648831723831725), ('false discovery rate', 0.30636363636363656), ('false negative rate', 0.41681797695768275), ('accuracy', 0.56050000000000022), ('f1 score', 0.62883034902736623)])
+svm_rbf
+0
+OrderedDict([('sensitivity', nan), ('specificity', 0.54999999999999905), ('precision', 0.0), ('negative predictive value', 1.0), ('false positive rate', 0.4500000000000004), ('false discovery rate', 1.0), ('false negative rate', nan), ('accuracy', 0.54999999999999905), ('f1 score', 0.0)])
+1
+OrderedDict([('sensitivity', 0.54999999999999905), ('specificity', nan), ('precision', 1.0), ('negative predictive value', 0.0), ('false positive rate', nan), ('false discovery rate', 0.0), ('false negative rate', 0.4500000000000004), ('accuracy', 0.54999999999999905), ('f1 score', 0.70967741935483886)])
+knn
+0
+OrderedDict([('sensitivity', 0.61974134199134212), ('specificity', 0.63713282335999077), ('precision', 0.45000000000000007), ('negative predictive value', 0.76727272727272688), ('false positive rate', 0.36286717664000934), ('false discovery rate', 0.54999999999999993), ('false negative rate', 0.38025865800865788), ('accuracy', 0.62449999999999983), ('f1 score', 0.50237123808573514)])
+1
+OrderedDict([('sensitivity', 0.63713282335999077), ('specificity', 0.61974134199134212), ('precision', 0.76727272727272688), ('negative predictive value', 0.45000000000000007), ('false positive rate', 0.38025865800865788), ('false discovery rate', 0.23272727272727287), ('false negative rate', 0.36286717664000934), ('accuracy', 0.62449999999999983), ('f1 score', 0.68912582234983166)])
+gaussian
+0
+OrderedDict([('sensitivity', 0.54254195804195815), ('specificity', 0.63512577210371346), ('precision', 0.58333333333333348), ('negative predictive value', 0.58818181818181792), ('false positive rate', 0.36487422789628643), ('false discovery rate', 0.41666666666666641), ('false negative rate', 0.45745804195804196), ('accuracy', 0.58599999999999997), ('f1 score', 0.55317905044432814)])
+1
+OrderedDict([('sensitivity', 0.63512577210371346), ('specificity', 0.54254195804195815), ('precision', 0.58818181818181792), ('negative predictive value', 0.58333333333333348), ('false positive rate', 0.45745804195804196), ('false discovery rate', 0.41181818181818203), ('false negative rate', 0.36487422789628643), ('accuracy', 0.58599999999999997), ('f1 score', 0.60288774443102766)])
+logistic
+0
+OrderedDict([('sensitivity', 0.57920995670995656), ('specificity', 0.61627427637721754), ('precision', 0.46666666666666656), ('negative predictive value', 0.70363636363636328), ('false positive rate', 0.38372572362278234), ('false discovery rate', 0.53333333333333333), ('false negative rate', 0.42079004329004344), ('accuracy', 0.5970000000000002), ('f1 score', 0.50513934672138983)])
+1
+OrderedDict([('sensitivity', 0.61627427637721754), ('specificity', 0.57920995670995656), ('precision', 0.70363636363636328), ('negative predictive value', 0.46666666666666656), ('false positive rate', 0.42079004329004344), ('false discovery rate', 0.2963636363636365), ('false negative rate', 0.38372572362278234), ('accuracy', 0.5970000000000002), ('f1 score', 0.65195318382836687)])
+forests
+0
+OrderedDict([('sensitivity', 0.58702922077922082), ('specificity', 0.59890182903611711), ('precision', 0.33555555555555522), ('negative predictive value', 0.80181818181818199), ('false positive rate', 0.40109817096388289), ('false discovery rate', 0.66444444444444439), ('false negative rate', 0.41297077922077913), ('accuracy', 0.59199999999999997), ('f1 score', 0.41022544302962261)])
+1
+OrderedDict([('sensitivity', 0.59890182903611711), ('specificity', 0.58702922077922082), ('precision', 0.80181818181818199), ('negative predictive value', 0.33555555555555522), ('false positive rate', 0.41297077922077913), ('false discovery rate', 0.19818181818181832), ('false negative rate', 0.40109817096388289), ('accuracy', 0.59199999999999997), ('f1 score', 0.6821919143491858)])
